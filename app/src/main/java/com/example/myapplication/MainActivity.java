@@ -8,6 +8,7 @@ import com.google.android.material.snackbar.Snackbar;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 
@@ -46,6 +47,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -73,6 +76,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView expiryDateValueTv;
 
     private TextView datOfBirthValueTv;
+    private TextView linkTv;
+    private TextView cgpaTv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
         scannedValueTv = findViewById(R.id.scannedValueTv);
         expiryDateValueTv = findViewById(R.id.expiryDateValueTv);
         datOfBirthValueTv = findViewById(R.id.datOfBirthValueTv);
+        linkTv = findViewById(R.id.Link);
 
         registerUiListener();
     }
@@ -101,60 +107,23 @@ public class MainActivity extends AppCompatActivity {
     private final ActivityResultLauncher<ScanOptions> scannerLauncher = registerForActivityResult(
             new ScanContract(),
             result -> {
-//                X509Certificate cert =null;
-//                String keyStorePassword = "vdstools";
-//                KeyStore ks = null;
-//                Security.removeProvider("BC");
-//                Security.addProvider(new BouncyCastleProvider());
-//                KeyStore keyStore = null;
-//
-//                try {
-//                    InputStream caInput = getResources().openRawResource(R.raw.vdstools_testcerts);
-//                    ks = getKeystore(caInput,keyStorePassword);
-//                    cert = (X509Certificate) ks.getCertificate("dets32");
-//                }  catch (KeyStoreException e) {
-//                    throw new RuntimeException(e);
-//                }
-//
-//                if (result.getContents() == null) {
-//                    Toast.makeText(this, "Cancelled", Toast.LENGTH_SHORT).show();
-//                } else {
-//                    Logger.debug("my log",result.getContents());
-//                    DigitalSeal digitalSealToVerify = DigitalSeal.fromRawString(result.getContents());
-//                    String signerCertRef = digitalSealToVerify.getSignerCertRef();
-//                    try {
-//                        InputStream is = getResources().openRawResource(R.raw.sealgen_dets32);
-//                        CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509", "BC");
-//                        X509Certificate certificate = (X509Certificate) certificateFactory.generateCertificate(is);
-//                        is.close();
-//                        Verifier verifier = new Verifier(digitalSealToVerify, certificate);
-//                        Verifier.Result result1 = verifier.verify();
-//                        Logger.debug(result1.toString());
-//                        scannedValueTv.setText("Scanned Value : " + result1.toString());
-//                    }  catch (CertificateException e) {
-//                        throw new RuntimeException(e);
-//                    } catch (IOException e) {
-//                        throw new RuntimeException(e);
-//                    } catch (NoSuchProviderException e) {
-//                        throw new RuntimeException(e);
-//                    }
                 String password_ = "bccca";
                 FileInputStream fis = null;
                 X509Certificate cert =null;
                Security.removeProvider("BC");
                Security.addProvider(new BouncyCastleProvider());
                 try {
-                    InputStream rawInputStream = getResources().openRawResource(R.raw.ahad_cert);
+                    InputStream rawInputStream = getResources().openRawResource(R.raw.ahad_cert_cer);
                     fis = convertInputStreamToFileInputStream(rawInputStream);
-//                    CertificateFactory factory = CertificateFactory.getInstance("X.509", "BC");
-//                    cert = (X509Certificate) factory.generateCertificate(fis);
-                    KeyStore keyStore = KeyStore.getInstance("PKCS12", "BC");
-                    keyStore.load(fis, password_.toCharArray());
-                    Enumeration<String> aliases = keyStore.aliases();
-                    while (aliases.hasMoreElements()) {
-                        String alias = aliases.nextElement();
-                        cert = (X509Certificate) keyStore.getCertificate(alias);
-                    }
+                    CertificateFactory factory = CertificateFactory.getInstance("X.509", "BC");
+                    cert = (X509Certificate) factory.generateCertificate(fis);
+//                    KeyStore keyStore = KeyStore.getInstance("PKCS12", "BC");
+//                    keyStore.load(fis, password_.toCharArray());
+//                    Enumeration<String> aliases = keyStore.aliases();
+//                    while (aliases.hasMoreElements()) {
+//                        String alias = aliases.nextElement();
+//                        cert = (X509Certificate) keyStore.getCertificate(alias);
+//                    }
                 } catch (FileNotFoundException e) {
                     throw new RuntimeException(e);
                 } catch (CertificateException e) {
@@ -163,21 +132,32 @@ public class MainActivity extends AppCompatActivity {
                     throw new RuntimeException(e);
                 } catch (NoSuchProviderException e) {
                     throw new RuntimeException(e);
-                } catch (KeyStoreException e) {
-                    throw new RuntimeException(e);
-                } catch (NoSuchAlgorithmException e) {
-                    throw new RuntimeException(e);
                 }
                 if(result.getContents() == null) {
                     Toast.makeText(this, "Cancelled", Toast.LENGTH_SHORT).show();
                 } else {
                     Logger.debug("my log",result.getContents());
                     DigitalSeal digitalSealToVerify = DigitalSeal.fromRawString(result.getContents());
+//                    File cacheDir = getApplicationContext().getCacheDir();
+//                    new DownloadCertificateTask(cacheDir).execute(digitalSealToVerify.getFeatureList().get(2).valueStr());
+//                    File tempFile = new File(cacheDir, "certificate.cer");
+//                    try {
+//                        fis = new FileInputStream(tempFile);
+//                        CertificateFactory factory = CertificateFactory.getInstance("X.509", "BC");
+//                        cert = (X509Certificate) factory.generateCertificate(fis);
+//                    } catch (FileNotFoundException e) {
+//                        throw new RuntimeException(e);
+//                    } catch (CertificateException e) {
+//                        throw new RuntimeException(e);
+//                    } catch (NoSuchProviderException e) {
+//                        throw new RuntimeException(e);
+//                    }
                     Verifier verifier = new Verifier(digitalSealToVerify, cert);
                     Verifier.Result result1 = verifier.verify();
                     Logger.debug(result1.toString());
-                    expiryDateValueTv.setText("Issue Date : " + digitalSealToVerify.getIssuingDate().toString());
-                    datOfBirthValueTv.setText("Signature Date: " + digitalSealToVerify.getSigDate().toString());
+                    linkTv.setText("Link: " + digitalSealToVerify.getFeatureList().get(2).valueStr());
+                    expiryDateValueTv.setText("First Name : " + digitalSealToVerify.getFeatureList().get(0).valueStr());
+                    datOfBirthValueTv.setText("CGPA: " + digitalSealToVerify.getFeatureList().get(1).valueStr());
                     scannedValueTv.setText("Signature Status : " + result1.toString());
                 }
 
