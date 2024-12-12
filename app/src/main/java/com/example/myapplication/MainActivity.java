@@ -65,6 +65,7 @@ import java.util.concurrent.Executors;
 
 import de.tsenger.vdstools.Verifier;
 import de.tsenger.vdstools.vds.DigitalSeal;
+import de.tsenger.vdstools.vds.Feature;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -148,7 +149,11 @@ public class MainActivity extends AppCompatActivity {
                     Verifier verifier = new Verifier(digitalSealToVerify, cert);
                     Verifier.Result result1 = verifier.verify();
                     Logger.debug(result1.toString());
-                    linkTv.setText("Link: " + digitalSealToVerify.getFeatureList().get(2).valueStr());
+                    StringBuilder builder = new StringBuilder();
+                    for(Feature feature: digitalSealToVerify.getFeatureList()) {
+                        builder.append(feature.name() + ": " + feature.valueStr() + "\n");
+                    }
+                    linkTv.setText(builder.toString());
                     expiryDateValueTv.setText("First Name : " + digitalSealToVerify.getFeatureList().get(0).valueStr());
                     datOfBirthValueTv.setText("CGPA: " + digitalSealToVerify.getFeatureList().get(1).valueStr());
                     scannedValueTv.setText("Signature Status : " + result1.toString());
