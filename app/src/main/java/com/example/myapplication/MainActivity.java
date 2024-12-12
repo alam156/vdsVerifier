@@ -117,13 +117,6 @@ public class MainActivity extends AppCompatActivity {
                     fis = convertInputStreamToFileInputStream(rawInputStream);
                     CertificateFactory factory = CertificateFactory.getInstance("X.509", "BC");
                     cert = (X509Certificate) factory.generateCertificate(fis);
-//                    KeyStore keyStore = KeyStore.getInstance("PKCS12", "BC");
-//                    keyStore.load(fis, password_.toCharArray());
-//                    Enumeration<String> aliases = keyStore.aliases();
-//                    while (aliases.hasMoreElements()) {
-//                        String alias = aliases.nextElement();
-//                        cert = (X509Certificate) keyStore.getCertificate(alias);
-//                    }
                 } catch (FileNotFoundException e) {
                     throw new RuntimeException(e);
                 } catch (CertificateException e) {
